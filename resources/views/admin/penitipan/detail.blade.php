@@ -14,9 +14,9 @@
                 Edit Data
             </a>
             @if($item->status == 0)
-                <form action="{{ route('admin.penitipan.ambil', $item->id) }}" method="POST">
+                <form id="form-verifikasi-detail" action="{{ route('admin.penitipan.ambil', $item->id) }}" method="POST">
                     @csrf
-                    <button type="submit" class="px-4 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
+                    <button type="button" id="btn-verifikasi-detail" class="px-4 py-2 text-sm font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors shadow-sm">
                         Verifikasi Ambil
                     </button>
                 </form>
@@ -111,3 +111,35 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btnVerifikasi = document.getElementById('btn-verifikasi-detail');
+        const formVerifikasi = document.getElementById('form-verifikasi-detail');
+
+        if(btnVerifikasi && formVerifikasi) {
+            btnVerifikasi.addEventListener('click', function() {
+                Swal.fire({
+                    title: 'Verifikasi Final',
+                    html: `Pastikan STNK dan KTP penerima telah diperiksa sebelum kendaraan diserahkan.`,
+                    icon: 'question',
+                    iconColor: '#1e40af',
+                    showCancelButton: true,
+                    confirmButtonColor: '#10b981',
+                    cancelButtonColor: '#6b7280',
+                    confirmButtonText: 'Selesaikan Penitipan',
+                    cancelButtonText: 'Batal',
+                    customClass: {
+                        popup: 'rounded-2xl border-2 border-blue-100 shadow-2xl',
+                        title: 'font-bold text-gray-800',
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formVerifikasi.submit();
+                    }
+                });
+            });
+        }
+    });
+</script>
+@endpush
