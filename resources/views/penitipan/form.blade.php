@@ -142,6 +142,28 @@
                             </div>
                         </div>
 
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Lokasi Penitipan <span class="text-red-500">*</span></label>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <select id="lokasi_jenis" name="lokasi_jenis" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none bg-white">
+                                        <option value="">-- Pilih Lokasi --</option>
+                                        <option value="polsek" {{ old('lokasi_jenis') === 'polsek' ? 'selected' : '' }}>Polsek</option>
+                                        <option value="polrestabes" {{ old('lokasi_jenis') === 'polrestabes' ? 'selected' : '' }}>Polrestabes Semarang</option>
+                                    </select>
+                                    @error('lokasi_jenis') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div id="lokasi_nama_wrapper"  class="{{ old('lokasi_jenis') === 'polsek' ? '' : 'hidden' }}">
+                                    <label for="lokasi_nama" class="block text-sm font-semibold text-gray-700 mb-1">Nama Lokasi (Polsek)</label>
+                                    <input id="lokasi_nama" type="text" name="lokasi_nama" value="{{ old('lokasi_nama') }}" maxlength="100"
+                                        placeholder="Contoh: Polsek Semarang Barat"
+                                        class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all bg-gray-50 focus:bg-white" />
+                                    @error('lokasi_nama') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="pt-2">
                             <label class="block text-sm font-semibold text-gray-700 mb-2">Foto Fisik Kendaraan <span
                                     class="text-red-500">*</span></label>
@@ -245,6 +267,41 @@
             overlay.classList.remove('hidden');   // Aktifkan overlay hitam saat di-hover
         }
     }
+
+    // Lokasi Penitipan: toggle and default behavior
+        (function () {
+            var jenis = document.getElementById('lokasi_jenis');
+            var namaWrapper = document.getElementById('lokasi_nama_wrapper');
+            var namaInput = document.getElementById('lokasi_nama');
+
+            if (!jenis) return;
+
+            function updateLokasi() {
+                var val = jenis.value;
+
+                if (val === 'polsek') {
+                    namaWrapper.classList.remove('hidden');
+                    if (namaInput) {
+                        namaInput.removeAttribute('readonly');
+                    }
+                } else if (val === 'polrestabes') {
+                    namaWrapper.classList.add('hidden');
+                    if (namaInput) {
+                        namaInput.value = 'Polrestabes Semarang';
+                        namaInput.setAttribute('readonly', true);
+                    }
+                } else {
+                    namaWrapper.classList.add('hidden');
+                    if (namaInput) {
+                        namaInput.value = '';
+                        namaInput.removeAttribute('readonly');
+                    }
+                }
+            }
+
+            updateLokasi();
+            jenis.addEventListener('change', updateLokasi);
+        })();
 </script>
 </body>
 

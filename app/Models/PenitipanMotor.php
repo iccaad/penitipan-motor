@@ -27,6 +27,8 @@ class PenitipanMotor extends Model
         'tanggal_ambil',
         'waktu_ambil',
         'status',
+        'lokasi_jenis',
+        'lokasi_nama',
     ];
 
     public static function generateKodeTitip(): string

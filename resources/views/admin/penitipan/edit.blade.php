@@ -49,6 +49,18 @@
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor KTP</label>
                         <input type="text" name="no_ktp" value="{{ old('no_ktp', $item->no_ktp) }}" class="w-full border border-gray-300 rounded-lg p-2.5 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all">
                     </div>
+                    <div class="mt-4">
+                        <label class="block text-sm font-medium mb-1">Lokasi Penitipan</label>
+                        <select name="lokasi_jenis" id="lokasi_jenis" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-[#1e40af] outline-none">
+                            <option value="polsek" {{ old('lokasi_jenis', $item->lokasi_jenis) == 'polsek' ? 'selected' : '' }}>Polsek</option>
+                            <option value="polrestabes" {{ old('lokasi_jenis', $item->lokasi_jenis) == 'polrestabes' ? 'selected' : '' }}>Polrestabes Semarang</option>
+                        </select>
+                    </div>
+
+                    <div id="lokasi_nama_wrapper" class="mt-3 {{ old('lokasi_jenis', $item->lokasi_jenis) == 'polsek' ? '' : 'hidden' }}">
+                        <label class="block text-sm font-medium mb-1">Nama Polsek</label>
+                        <input type="text" name="lokasi_nama" id="lokasi_nama" value="{{ old('lokasi_nama', $item->lokasi_nama) }}" class="w-full border rounded-lg p-2.5 focus:ring-2 focus:ring-[#1e40af] outline-none" placeholder="Contoh: Polsek Semarang Barat">
+                    </div>
                 </div>
 
                 <div class="space-y-4">
@@ -101,3 +113,24 @@
     </div>
 </div>
 @endsection
+@push('scripts')
+<script>
+(function () {
+    const jenis = document.getElementById('lokasi_jenis');
+    const wrapper = document.getElementById('lokasi_nama_wrapper');
+
+    if (!jenis) return;
+
+    function toggleLokasi() {
+        if (jenis.value === 'polsek') {
+            wrapper.classList.remove('hidden');
+        } else {
+            wrapper.classList.add('hidden');
+        }
+    }
+
+    toggleLokasi();
+    jenis.addEventListener('change', toggleLokasi);
+})();
+</script>
+@endpush

@@ -17,7 +17,7 @@
                     <input type="search" name="q_nama" value="{{ request('q_nama') }}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] focus:border-[#1e40af] outline-none transition-all text-sm" placeholder="Nama penitip...">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor Polisi</label>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor Polisi (Plat)</label>
                     <input type="search" name="q_nomor" value="{{ request('q_nomor') }}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all text-sm uppercase" placeholder="Misal: H 1234 AB">
                 </div>
                 <div>
@@ -45,6 +45,24 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Warna</label>
                     <input type="text" name="warna_motor" value="{{ request('warna_motor') }}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all text-sm" placeholder="Hitam, Merah...">
                 </div>
+                <!-- Jenis Lokasi -->
+            <div>
+                <label class="text-sm font-medium">Jenis Lokasi</label>
+                <select name="lokasi_jenis" class="w-full border rounded p-2">
+                    <option value="">Semua</option>
+                    <option value="polsek" {{ request('lokasi_jenis') == 'polsek' ? 'selected' : '' }}>Polsek</option>
+                    <option value="polrestabes" {{ request('lokasi_jenis') == 'polrestabes' ? 'selected' : '' }}>Polrestabes</option>
+                </select>
+            </div>
+
+            <!-- Nama Polsek -->
+            <div>
+                <label class="text-sm font-medium">Nama Polsek</label>
+                <input type="text" name="lokasi_nama"
+                    value="{{ request('lokasi_nama') }}"
+                    placeholder="Cari nama polsek..."
+                    class="w-full border rounded p-2">
+            </div>
                 
                 <div class="flex items-end space-x-2">
                     <button type="submit" class="w-full bg-[#1e40af] hover:bg-blue-800 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow-sm">Filter Data</button>
@@ -58,10 +76,11 @@
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left text-gray-600 whitespace-nowrap">
                 <thead class="text-xs text-gray-700 uppercase bg-gray-100 border-b border-gray-200">
-                    <tr>
+                        <tr>
                         <th scope="col" class="px-6 py-4 font-bold">Foto</th>
                         <th scope="col" class="px-6 py-4 font-bold">Identitas Kendaraan</th>
                         <th scope="col" class="px-6 py-4 font-bold">Pemilik / Waktu Titip</th>
+                        <th scope="col" class="px-6 py-4 font-bold">Lokasi</th>
                         <th scope="col" class="px-6 py-4 font-bold text-center">Status</th>
                         <th scope="col" class="px-6 py-4 font-bold text-center">Aksi Operasional</th>
                     </tr>
@@ -88,6 +107,16 @@
                             <td class="px-6 py-4">
                                 <div class="font-semibold text-gray-800">{{ $item->nama_penitip }}</div>
                                 <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($item->tanggal_titip)->format('d M Y, H:i') }}</div>
+                            </td>
+
+                            <td class="px-6 py-4 text-center">
+                                @if($item->lokasi_jenis === 'polsek' && $item->lokasi_nama)
+                                    <span class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-medium">Polsek - {{ $item->lokasi_nama }}</span>
+                                @elseif($item->lokasi_jenis === 'polrestabes')
+                                    <span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-medium">Polrestabes Semarang</span>
+                                @else
+                                    <span class="text-sm text-gray-400">-</span>
+                                @endif
                             </td>
 
                             <td class="px-6 py-4 text-center">
@@ -133,7 +162,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center text-gray-400">
                                     <svg class="w-12 h-12 mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                                     <p class="text-sm font-medium text-gray-500">Tidak ada data operasional yang ditemukan.</p>

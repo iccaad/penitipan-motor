@@ -29,11 +29,25 @@ class PenitipanController extends BaseController
             'cc_motor' => 'required|integer',
             'warna_motor' => 'required|string',
 
+            'lokasi_jenis' => 'required|in:polsek,polrestabes',
+            'lokasi_nama' => 'required_if:lokasi_jenis,polsek|nullable|string|max:100',
+
             'foto_motor' => 'required|image',
             'tanggal_titip' => 'required|date',
             'tanggal_rencana_ambil' => 'required|date',
         ]);
 
+        // Ensure lokasi_nama is always set. If polrestabes, override name.
+        // Normalize & enforce lokasi
+         if ($validated['lokasi_jenis'] === 'polrestabes') {
+             $validated['lokasi_nama'] = 'Polrestabes Semarang';
+                 } else {
+                     if (empty($validated['lokasi_nama'])) {
+                         return back()->withErrors(['lokasi_nama' => 'Nama polsek wajib diisi.']);
+                     }
+
+                     $validated['lokasi_nama'] = ucwords(strtolower($validated['lokasi_nama']));
+                }
         try {
             $imageFile = $request->file('foto_motor');
 
@@ -72,6 +86,9 @@ class PenitipanController extends BaseController
                 'tipe_motor' => $validated['tipe_motor'],
                 'cc_motor' => $validated['cc_motor'],
                 'warna_motor' => $validated['warna_motor'],
+
+                'lokasi_jenis' => $validated['lokasi_jenis'],
+                'lokasi_nama' => $validated['lokasi_nama'],
 
                 'foto_motor' => $publicPath,
 

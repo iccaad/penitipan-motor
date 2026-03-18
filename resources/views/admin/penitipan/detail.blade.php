@@ -75,6 +75,18 @@
                                 <dt class="text-gray-500 font-medium">Nomor Handphone</dt>
                                 <dd class="font-semibold text-gray-800">{{ $item->no_hp }}</dd>
                             </div>
+                            <div class="mt-4">
+                                <dt class="text-gray-500 font-medium">Lokasi Penitipan</dt>
+                                <dd class="text-base font-semibold text-gray-800 mt-1">
+                                    @if($item->lokasi_jenis === 'polsek' && $item->lokasi_nama)
+                                        Polsek - {{ $item->lokasi_nama }}
+                                    @elseif($item->lokasi_jenis === 'polrestabes')
+                                        Polrestabes Semarang
+                                    @else
+                                        -
+                                    @endif
+                                </dd>
+                            </div>
                         </dl>
                     </div>
 

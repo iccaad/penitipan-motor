@@ -78,7 +78,14 @@ public function authenticate(Request $request)
             'cc_motor' => 'required|integer',
             'warna_motor' => 'required|string',
             'tanggal_rencana_ambil' => 'required|date',
+            'lokasi_jenis' => 'required|in:polsek,polrestabes',
+            'lokasi_nama' => 'required_if:lokasi_jenis,polsek|nullable|string|max:100',
         ]);
+
+        // Normalize lokasi_nama: enforce Polrestabes Semarang when selected
+        if (isset($validated['lokasi_jenis']) && $validated['lokasi_jenis'] === 'polrestabes') {
+            $validated['lokasi_nama'] = 'Polrestabes Semarang';
+        }
 
         $item->update($validated);
 
@@ -128,6 +135,15 @@ public function authenticate(Request $request)
 
         $query->when($request->input('status') !== null && $request->input('status') !== '', function ($q) use ($request) {
             $q->where('status', $request->input('status'));
+        });
+
+        // Filter by lokasi_jenis and lokasi_nama (safe for nulls)
+        $query->when($request->input('lokasi_jenis'), function ($q, $v) {
+            $q->where('lokasi_jenis', $v);
+        });
+
+        $query->when($request->input('lokasi_nama'), function ($q, $v) {
+            $q->where('lokasi_nama', 'like', '%' . $v . '%');
         });
 
         $penitipans = $query->orderBy('created_at', 'desc')
