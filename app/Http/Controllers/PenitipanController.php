@@ -23,31 +23,33 @@ class PenitipanController extends BaseController
             'no_hp' => 'required|string',
             'no_ktp' => 'required|string',
 
-            'nomor_polisi' => 'required|string',
+            // plate parts: we collect and then merge into nomor_polisi
+            'plat_prefix' => 'required|string|max:2',
+            'plat_nomor' => 'required|string|max:4',
+            'plat_suffix' => 'required|string|max:3',
+
             'merk_motor' => 'required|string',
             'tipe_motor' => 'required|string',
             'cc_motor' => 'required|integer',
             'warna_motor' => 'required|string',
 
-            'lokasi_jenis' => 'required|in:polsek,polrestabes',
-            'lokasi_nama' => 'required_if:lokasi_jenis,polsek|nullable|string|max:100',
+            'lokasi_nama' => 'required|string|max:100',
 
             'foto_motor' => 'required|image',
             'tanggal_titip' => 'required|date',
             'tanggal_rencana_ambil' => 'required|date',
         ]);
 
-        // Ensure lokasi_nama is always set. If polrestabes, override name.
-        // Normalize & enforce lokasi
-         if ($validated['lokasi_jenis'] === 'polrestabes') {
-             $validated['lokasi_nama'] = 'Polrestabes Semarang';
-                 } else {
-                     if (empty($validated['lokasi_nama'])) {
-                         return back()->withErrors(['lokasi_nama' => 'Nama polsek wajib diisi.']);
-                     }
+        // Merge plate parts into standardized nomor_polisi: "H 1234 AB"
+        $prefix = strtoupper(trim($request->input('plat_prefix')));
+        $nomor  = trim($request->input('plat_nomor'));
+        $suffix = strtoupper(trim($request->input('plat_suffix')));
 
-                     $validated['lokasi_nama'] = ucwords(strtolower($validated['lokasi_nama']));
-                }
+        $nomor_polisi = preg_replace('/\s+/', ' ', "$prefix $nomor $suffix");
+
+        // Derive lokasi_jenis from chosen lokasi_nama (single dropdown)
+        $lokasiNama = $validated['lokasi_nama'];
+        $lokasiJenis = $lokasiNama === 'Polrestabes Semarang' ? 'polrestabes' : 'polsek';
         try {
             $imageFile = $request->file('foto_motor');
 
@@ -81,14 +83,14 @@ class PenitipanController extends BaseController
                 'no_hp' => $validated['no_hp'],
                 'no_ktp' => $validated['no_ktp'],
 
-                'nomor_polisi' => $validated['nomor_polisi'],
+                'nomor_polisi' => $nomor_polisi,
                 'merk_motor' => $validated['merk_motor'],
                 'tipe_motor' => $validated['tipe_motor'],
                 'cc_motor' => $validated['cc_motor'],
                 'warna_motor' => $validated['warna_motor'],
 
-                'lokasi_jenis' => $validated['lokasi_jenis'],
-                'lokasi_nama' => $validated['lokasi_nama'],
+                'lokasi_jenis' => $lokasiJenis,
+                'lokasi_nama' => $lokasiNama,
 
                 'foto_motor' => $publicPath,
 

@@ -67,29 +67,54 @@ public function authenticate(Request $request)
      */
     public function update(Request $request, $id)
     {
-        $item = PenitipanMotor::findOrFail($id);
+    $item = PenitipanMotor::findOrFail($id);
 
-        $validated = $request->validate([
-            'nama_penitip' => 'required|string',
-            'no_hp' => 'required|string',
-            'nomor_polisi' => 'required|string',
-            'merk_motor' => 'required|string',
-            'tipe_motor' => 'required|string',
-            'cc_motor' => 'required|integer',
-            'warna_motor' => 'required|string',
-            'tanggal_rencana_ambil' => 'required|date',
-            'lokasi_jenis' => 'required|in:polsek,polrestabes',
-            'lokasi_nama' => 'required_if:lokasi_jenis,polsek|nullable|string|max:100',
-        ]);
+    $validated = $request->validate([
+        'nama_penitip' => 'required|string',
+        'no_hp' => 'required|string',
+        'plat_prefix' => 'required|string|max:2',
+        'plat_nomor' => 'required|string|max:4',
+        'plat_suffix' => 'required|string|max:3',
+        'merk_motor' => 'required|string',
+        'tipe_motor' => 'required|string',
+        'cc_motor' => 'required|integer',
+        'warna_motor' => 'required|string',
+        'tanggal_rencana_ambil' => 'required|date',
 
-        // Normalize lokasi_nama: enforce Polrestabes Semarang when selected
-        if (isset($validated['lokasi_jenis']) && $validated['lokasi_jenis'] === 'polrestabes') {
-            $validated['lokasi_nama'] = 'Polrestabes Semarang';
-        }
+        
+        'lokasi_nama' => 'required|in:' . implode(',', config('polsek.list')),
+    ]);
 
-        $item->update($validated);
+    // derive otomatis 
+    $lokasiNama = $validated['lokasi_nama'];
 
-        return redirect()->route('admin.penitipan.index')->with('success', 'Data penitipan berhasil diperbarui.');
+    $lokasiJenis = $lokasiNama === 'Polrestabes Semarang'
+        ? 'polrestabes'
+        : 'polsek';
+    // Merge plate parts into standardized nomor_polisi
+    $prefix = strtoupper(trim($validated['plat_prefix']));
+    $nomor  = trim($validated['plat_nomor']);
+    $suffix = strtoupper(trim($validated['plat_suffix']));
+
+    $nomor_polisi = preg_replace('/\s+/', ' ', "$prefix $nomor $suffix");
+
+    $item->update([
+        'nama_penitip' => $validated['nama_penitip'],
+        'no_hp' => $validated['no_hp'],
+        'nomor_polisi' => $nomor_polisi,
+        'merk_motor' => $validated['merk_motor'],
+        'tipe_motor' => $validated['tipe_motor'],
+        'cc_motor' => $validated['cc_motor'],
+        'warna_motor' => $validated['warna_motor'],
+        'tanggal_rencana_ambil' => $validated['tanggal_rencana_ambil'],
+
+        'lokasi_nama' => $lokasiNama,
+        'lokasi_jenis' => $lokasiJenis,
+    ]);
+
+    return redirect()
+        ->route('admin.penitipan.index')
+        ->with('success', 'Data penitipan berhasil diperbarui.');
     }
 
     /**
@@ -120,6 +145,25 @@ public function authenticate(Request $request)
             $q->where('kode_penitipan', 'ilike', "%{$v}%");
         });
 
+        // Plate-part filtering: allow searching by prefix/number/suffix combination
+        $query->when(
+            $request->filled('plat_prefix') ||
+            $request->filled('plat_nomor') ||
+            $request->filled('plat_suffix'),
+            function ($q) use ($request) {
+
+                $prefix = strtoupper(trim($request->plat_prefix ?? ''));
+                $nomor  = trim($request->plat_nomor ?? '');
+                $suffix = strtoupper(trim($request->plat_suffix ?? ''));
+
+                $pattern = trim("$prefix $nomor $suffix");
+
+                if ($pattern !== '') {
+                    $q->where('nomor_polisi', 'like', "%$pattern%");
+                }
+            }
+        );
+
         // Filters
         $query->when($request->input('merk_motor'), function ($q, $v) {
             $q->where('merk_motor', $v);
@@ -137,13 +181,9 @@ public function authenticate(Request $request)
             $q->where('status', $request->input('status'));
         });
 
-        // Filter by lokasi_jenis and lokasi_nama (safe for nulls)
-        $query->when($request->input('lokasi_jenis'), function ($q, $v) {
-            $q->where('lokasi_jenis', $v);
-        });
-
-        $query->when($request->input('lokasi_nama'), function ($q, $v) {
-            $q->where('lokasi_nama', 'like', '%' . $v . '%');
+        // Filter by a single lokasi dropdown (Polrestabes or specific Polsek)
+        $query->when($request->filled('lokasi'), function ($q) use ($request) {
+            $q->where('lokasi_nama', $request->lokasi);
         });
 
         $penitipans = $query->orderBy('created_at', 'desc')

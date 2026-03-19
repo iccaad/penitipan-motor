@@ -18,7 +18,21 @@
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Nomor Polisi (Plat)</label>
-                    <input type="search" name="q_nomor" value="{{ request('q_nomor') }}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all text-sm uppercase" placeholder="Misal: H 1234 AB">
+                      <div class="grid grid-cols-3 gap-3">
+
+                                <input type="text" name="plat_prefix" value="{{ old('plat_prefix') }}" placeholder="H"
+                                    maxlength="2" class="w-full border border-gray-300 rounded-lg p-2.5 text-center uppercase
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                                <input type="text" name="plat_nomor" value="{{ old('plat_nomor') }}" placeholder="1234"
+                                    class="w-full border border-gray-300 rounded-lg p-2.5 text-center
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                                <input type="text" name="plat_suffix" value="{{ old('plat_suffix') }}" placeholder="AB"
+                                    maxlength="3" class="w-full border border-gray-300 rounded-lg p-2.5 text-center uppercase
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                            </div>
                 </div>
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Kode Penitipan</label>
@@ -45,28 +59,29 @@
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Warna</label>
                     <input type="text" name="warna_motor" value="{{ request('warna_motor') }}" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all text-sm" placeholder="Hitam, Merah...">
                 </div>
-                <!-- Jenis Lokasi -->
-            <div>
-                <label class="text-sm font-medium">Jenis Lokasi</label>
-                <select name="lokasi_jenis" class="w-full border rounded p-2">
-                    <option value="">Semua</option>
-                    <option value="polsek" {{ request('lokasi_jenis') == 'polsek' ? 'selected' : '' }}>Polsek</option>
-                    <option value="polrestabes" {{ request('lokasi_jenis') == 'polrestabes' ? 'selected' : '' }}>Polrestabes</option>
-                </select>
-            </div>
+                <div>
+                    <label class="text-xs font-semibold text-gray-600 mb-1">Lokasi Penitipan</label>
+                    <select name="lokasi" class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none text-sm">
+                        <option value="">Semua Lokasi</option>
+                                    @foreach(config('polsek.list') as $lokasi)
+                                        <option value="{{ $lokasi }}" {{ old('lokasi_nama') == $lokasi ? 'selected' : '' }}>
+                                            {{ $lokasi }}
+                                        </option>
+                                    @endforeach
 
-            <!-- Nama Polsek -->
-            <div>
-                <label class="text-sm font-medium">Nama Polsek</label>
-                <input type="text" name="lokasi_nama"
-                    value="{{ request('lokasi_nama') }}"
-                    placeholder="Cari nama polsek..."
-                    class="w-full border rounded p-2">
-            </div>
-                
-                <div class="flex items-end space-x-2">
-                    <button type="submit" class="w-full bg-[#1e40af] hover:bg-blue-800 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors shadow-sm">Filter Data</button>
-                    <a href="{{ route('admin.penitipan.index') }}" class="w-full text-center bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium px-4 py-2 rounded-lg text-sm transition-colors border border-gray-300">Reset</a>
+                    </select>
+                </div>
+
+                <div class="col-span-1 md:col-span-2 lg:col-span-4 flex justify-center gap-3 mt-4">
+                    <button type="submit"
+                        class="bg-[#1e40af] text-white px-6 py-2 rounded-lg font-semibold text-sm">
+                        Filter Data
+                    </button>
+
+                    <a href="{{ route('admin.penitipan.index') }}"
+                        class="bg-gray-200 px-6 py-2 rounded-lg font-semibold text-sm">
+                        Reset
+                    </a>
                 </div>
             </div>
         </form>

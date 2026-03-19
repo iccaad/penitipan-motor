@@ -91,13 +91,25 @@
                         Kendaraan</h3>
                     <div class="space-y-4">
                         <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Nomor Polisi (Plat) <span
-                                    class="text-red-500">*</span></label>
-                            <input type="text" name="nomor_polisi" value="{{ old('nomor_polisi') }}"
-                                class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all bg-gray-50 focus:bg-white uppercase font-bold text-lg text-center tracking-widest"
-                                placeholder="H 1234 AB" />
-                            @error('nomor_polisi') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p>
-                            @enderror
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">
+                                Nomor Polisi (Plat) <span class="text-red-500">*</span>
+                            </label>
+
+                            <div class="grid grid-cols-3 gap-3">
+
+                                <input type="text" name="plat_prefix" value="{{ old('plat_prefix') }}" placeholder="H"
+                                    maxlength="2" class="w-full border border-gray-300 rounded-lg p-2.5 text-center uppercase
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                                <input type="text" name="plat_nomor" value="{{ old('plat_nomor') }}" placeholder="1234"
+                                    class="w-full border border-gray-300 rounded-lg p-2.5 text-center
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                                <input type="text" name="plat_suffix" value="{{ old('plat_suffix') }}" placeholder="AB"
+                                    maxlength="3" class="w-full border border-gray-300 rounded-lg p-2.5 text-center uppercase
+                   focus:ring-2 focus:ring-[#1e40af] outline-none">
+
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
@@ -143,24 +155,25 @@
                         </div>
 
                         <div class="mt-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-2">Lokasi Penitipan <span class="text-red-500">*</span></label>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <select id="lokasi_jenis" name="lokasi_jenis" class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none bg-white">
-                                        <option value="">-- Pilih Lokasi --</option>
-                                        <option value="polsek" {{ old('lokasi_jenis') === 'polsek' ? 'selected' : '' }}>Polsek</option>
-                                        <option value="polrestabes" {{ old('lokasi_jenis') === 'polrestabes' ? 'selected' : '' }}>Polrestabes Semarang</option>
-                                    </select>
-                                    @error('lokasi_jenis') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
-                                </div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Lokasi Penitipan <span
+                                    class="text-red-500">*</span></label>
 
-                                <div id="lokasi_nama_wrapper"  class="{{ old('lokasi_jenis') === 'polsek' ? '' : 'hidden' }}">
-                                    <label for="lokasi_nama" class="block text-sm font-semibold text-gray-700 mb-1">Nama Lokasi (Polsek)</label>
-                                    <input id="lokasi_nama" type="text" name="lokasi_nama" value="{{ old('lokasi_nama') }}" maxlength="100"
-                                        placeholder="Contoh: Polsek Semarang Barat"
-                                        class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all bg-gray-50 focus:bg-white" />
-                                    @error('lokasi_nama') <p class="text-red-500 text-xs mt-1 font-medium">{{ $message }}</p> @enderror
-                                </div>
+                            <div>
+                                <select name="lokasi_nama" required
+                                    class="w-full border border-gray-300 rounded-lg p-2 focus:ring-2 focus:ring-[#1e40af] outline-none text-sm">
+
+                                    <option value="">-- Pilih Lokasi --</option>
+                                    @foreach(config('polsek.list') as $lokasi)
+                                        <option value="{{ $lokasi }}" {{ old('lokasi_nama') == $lokasi ? 'selected' : '' }}>
+                                            {{ $lokasi }}
+                                        </option>
+                                    @endforeach
+
+                                </select>
+
+                                @error('lokasi_nama')
+                                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                @enderror
                             </div>
                         </div>
 
@@ -227,7 +240,8 @@
                             <input type="date" name="tanggal_rencana_ambil" value="{{ old('tanggal_rencana_ambil') }}"
                                 class="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-[#1e40af] outline-none transition-all bg-white" />
                             @error('tanggal_rencana_ambil') <p class="text-red-500 text-xs mt-1 font-medium">
-                            {{ $message }}</p> @enderror
+                                {{ $message }}
+                            </p> @enderror
                         </div>
                     </div>
                 </div>
@@ -248,61 +262,90 @@
         </div>
     </div>
     <script>
-    function previewImage(event) {
-        const input = event.target;
-        const prompt = document.getElementById('upload-prompt');
-        const preview = document.getElementById('image-preview');
-        const overlay = document.getElementById('change-overlay');
+        function previewImage(event) {
+            const input = event.target;
+            const prompt = document.getElementById('upload-prompt');
+            const preview = document.getElementById('image-preview');
+            const overlay = document.getElementById('change-overlay');
 
-        if (input.files && input.files[0]) {
-            // Membuat URL sementara dari file yang dipilih di perangkat user
-            const fileUrl = URL.createObjectURL(input.files[0]);
-            
-            // Set sumber gambar
-            preview.src = fileUrl;
-            
-            // Ubah visibilitas elemen
-            prompt.classList.add('hidden');       // Sembunyikan ikon kamera + teks
-            preview.classList.remove('hidden');   // Tampilkan gambar
-            overlay.classList.remove('hidden');   // Aktifkan overlay hitam saat di-hover
+            if (input.files && input.files[0]) {
+                // Membuat URL sementara dari file yang dipilih di perangkat user
+                const fileUrl = URL.createObjectURL(input.files[0]);
+
+                // Set sumber gambar
+                preview.src = fileUrl;
+
+                // Ubah visibilitas elemen
+                prompt.classList.add('hidden');       // Sembunyikan ikon kamera + teks
+                preview.classList.remove('hidden');   // Tampilkan gambar
+                overlay.classList.remove('hidden');   // Aktifkan overlay hitam saat di-hover
+            }
         }
+    </script>
+</body>
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    function setupPlatInputs(container) {
+        const prefix = container.querySelector('[name="plat_prefix"]');
+        const nomor = container.querySelector('[name="plat_nomor"]');
+        const suffix = container.querySelector('[name="plat_suffix"]');
+
+        if (!prefix || !nomor || !suffix) return;
+
+        // --- AUTO UPPERCASE ---
+        [prefix, suffix].forEach(input => {
+            input.addEventListener('input', function () {
+                this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '');
+            });
+        });
+
+        // --- NOMOR HANYA ANGKA ---
+        nomor.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // --- AUTO PINDAH ---
+        prefix.addEventListener('input', function () {
+            if (this.value.length >= 2) {
+                nomor.focus();
+                nomor.select();
+            }
+        });
+
+        nomor.addEventListener('input', function () {
+            if (this.value.length >= 4) {
+                suffix.focus();
+                suffix.select();
+            }
+        });
+
+        // --- BACKSPACE BALIK ---
+        nomor.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && this.value.length === 0) {
+                prefix.focus();
+            }
+        });
+
+        suffix.addEventListener('keydown', function (e) {
+            if (e.key === 'Backspace' && this.value.length === 0) {
+                nomor.focus();
+            }
+        });
+
+        // --- AUTO SELECT SAAT FOCUS ---
+        [prefix, nomor, suffix].forEach(input => {
+            input.addEventListener('focus', function () {
+                this.select();
+            });
+        });
     }
 
-    // Lokasi Penitipan: toggle and default behavior
-        (function () {
-            var jenis = document.getElementById('lokasi_jenis');
-            var namaWrapper = document.getElementById('lokasi_nama_wrapper');
-            var namaInput = document.getElementById('lokasi_nama');
+    // APPLY KE SEMUA FORM YANG ADA INPUT PLAT
+    document.querySelectorAll('.plat-group').forEach(setupPlatInputs);
 
-            if (!jenis) return;
-
-            function updateLokasi() {
-                var val = jenis.value;
-
-                if (val === 'polsek') {
-                    namaWrapper.classList.remove('hidden');
-                    if (namaInput) {
-                        namaInput.removeAttribute('readonly');
-                    }
-                } else if (val === 'polrestabes') {
-                    namaWrapper.classList.add('hidden');
-                    if (namaInput) {
-                        namaInput.value = 'Polrestabes Semarang';
-                        namaInput.setAttribute('readonly', true);
-                    }
-                } else {
-                    namaWrapper.classList.add('hidden');
-                    if (namaInput) {
-                        namaInput.value = '';
-                        namaInput.removeAttribute('readonly');
-                    }
-                }
-            }
-
-            updateLokasi();
-            jenis.addEventListener('change', updateLokasi);
-        })();
+});
 </script>
-</body>
-
+@endpush
 </html>
